@@ -10,6 +10,92 @@
     <title>Hello Moto Translator</title>
 </head>
 
+<style>
+
+body {
+    background-color: #BBDEFB;
+}
+
+h1 {
+    margin-top: 0%;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: verdana;
+    font-size: 5em;
+    font-weight: 700;
+    color: #f5f5f5;
+    text-shadow: 1px 1px 1px #919191, 1px 2px 1px #919191, 1px 3px 1px #919191, 1px 4px 1px #919191, 1px 5px 1px #919191, 1px 6px 1px #919191, 1px 7px 1px #919191, 1px 8px 1px #919191, 1px 9px 1px #919191, 1px 10px 1px #919191, 1px 18px 6px rgba(16, 16, 16, 0.4), 1px 22px 10px rgba(16, 16, 16, 0.2), 1px 25px 35px rgba(16, 16, 16, 0.2), 1px 30px 60px rgba(16, 16, 16, 0.4);
+}
+
+#translate_box {
+    border-radius: 15px;
+    background-color: #EEEEEE;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    backdrop-filter: blur(50px);
+    width: 50%;
+    height: 310px;
+    margin: auto;
+    padding: 1%;
+    box-sizing: border-box;
+    display: grid;
+    gap: 1%;
+    grid-template: "a b" "a b" "a b" "a b" "a b" "a b" "c c";
+}
+
+.box {
+    width: 100%;
+    height: 200px;
+    resize: none;
+    padding: 4%;
+    font-size: 2em;
+    box-sizing: border-box;
+    background-color: #E0F7FA;
+    backdrop-filter: blur(5px);
+    box-shadow: inset 2px 2px 2px 2px grey;
+}
+
+textarea {
+    border: none;
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+}
+
+#button_box {
+    width: 200px;
+}
+
+.language select {
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 22px;
+}
+
+#rec_btn:hover {
+    color: red;
+}
+
+#copy_btn {
+    color: #FF9800;
+}
+
+#copy_btn:hover {
+    color: green;
+}
+
+#translate {
+    border-radius: 5px;
+    color: #2196F3;
+    width: 100px;
+    padding: 5px 10px;
+}
+
+#translate:hover {
+    background-color: #2196F3;
+    color: white;
+}
+
+</style>
+
 <body>
     <h1>Masai Translator</h1>
     <div id="translate_box">
@@ -51,6 +137,82 @@
         </div>
     </div>
 </body>
-<script src="./script.js"></script>
+<script src="./script.js">
+
+var translate = document.getElementById('translate');
+translate.addEventListener("click", translator);
+
+async function translator() {
+    var input = document.getElementById('input').value;
+
+    function input_data() {
+        var input_language = document.getElementById('input_language').value;
+        return input_language;
+    }
+
+    function output_data() {
+        var output_language = document.getElementById('output_language').value;
+        return output_language;
+    }
+
+    var inp = input_data();
+    var out = output_data();
+
+    const res = await fetch("https://libretranslate.de/translate", {
+            method: "POST",
+            body: JSON.stringify({
+                q: input,
+                source: inp,
+                target: out,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => {
+            var result = res.json()
+                .then((data) => {
+                    var output = document.getElementById('output');
+                    if (data.translatedText == undefined) {
+
+                        output.innerText = '';
+                    } else {
+                        output.innerText = data.translatedText;
+                    }
+                })
+        }).catch((err) => {
+            // console.log('err', err);
+        });
+}
+
+// Voice recognization 
+
+var recording = document.getElementById("rec_btn");
+recording.addEventListener('click', recVoice);
+
+function recVoice() {
+    var speechRecog = new webkitSpeechRecognition();
+    speechRecog.lang = "en-GB";
+    speechRecog.onresult = function(event) {
+
+        let input = document.getElementById('input');
+        input.innerText = event.results[0][0].transcript;
+    }
+    speechRecog.start();
+
+}
+
+// Text copy
+
+var copy_btn = document.getElementById('copy_btn');
+copy_btn.addEventListener('click', copyText);
+
+function copyText() {
+    let out_text = document.getElementById('output');
+    out_text.select();
+    navigator.clipboard.writeText(out_text.value);
+}
+
+</script>
 
 </html>
